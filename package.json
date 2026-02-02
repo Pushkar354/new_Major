@@ -1,0 +1,19 @@
+{
+  "name": "new_major",
+  "version": "1.0.0",
+  "description": "major project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pushkar354/new.git"
+  },
+  "author": "pushkar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Pushkar354/new/issues"
+  },
+  "homepage": "https://github.com/Pushkar354/new#readme"
+}
