@@ -1,52 +1,34 @@
 const Pdf = require("pdfkit");
 
+const Generate_course = require("./GenerateCourse_controller");
+const generatePdf = require("./Syllabuspdf_Controller");
+
 const GeneratePdf_Controller = async (req,res)=>{
 
-const {topic,hours,modules} = req.body;
+const {email,topic,hours,modules} = req.body;
 
-if(!topic || !hours || !modules || !Array.isArray(modules)){
+if(!topic || !hours  || !Array.isArray(modules)){
    return res.status(400).send("invalid input");
 }
 
-const generatePdf = ()=>{
-return new Promise((resolve,reject)=>{
+
+
 
 try{
 
- const doc = new Pdf();
- const chunks = [];
+ const pdf = await generatePdf(email,topic,modules);
+ const Course=await Generate_course(email,hours,modules);
 
- doc.on("data",chunk=>chunks.push(chunk));
- doc.on("end",()=>resolve(Buffer.concat(chunks)));
-
- doc.fontSize(30).text(topic,{align:'center'});
- doc.moveDown();
-
- modules.forEach(m=>{
-    doc.fontSize(22).text(m.title,{align:'left'});
-    doc.moveDown();
-    doc.fontSize(18).text(m.content,{align:'left'});
-    doc.moveDown();
- });
-
- doc.end();
-
-}catch(err){
- reject(err);
-}
-
+res.json({
+   success:true,
+   syllabus:pdf,
+   course:Course
 })
-}
-
-try{
-
- const pdf = await generatePdf();
-
- res.setHeader('Content-Type','application/pdf');
- res.send(pdf);
 
 }catch(err){
- res.status(500).send("PDF generation failed");
+ res.status(500).json({
+   success:false
+ });
 }
 
 }
