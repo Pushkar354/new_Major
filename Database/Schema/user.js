@@ -35,7 +35,17 @@ const Course_Schema=new Moongose.Schema({
      createdAt: { type: Date, default: Date.now }
 
 })
+const Module_quiz=new Moongose.Schema({
+    quiz:{type: mongoose.Schema.Types.Mixed, required: true}
+})
+const Quiz_Schema=new Moongose.Schema({
+    id:String,
+    topic:String,
+    quiz:[Module_quiz],
+    createdAt:{type:Date,default:Date.now}
+});
 const Syllabus_model=new moongose.Model(Syllabus_Schema);
 const User_model=new moongose.Model(user_Schema);
 const Course_model=new moongose.Model(Course_Schema);
-module.exports={Connect_todb,User_model,Syllabus_model,Course_model};
+const Quiz_model=new moongose.Model(Quiz_Schema);
+module.exports={Connect_todb,User_model,Syllabus_model,Course_model,Quiz_model};

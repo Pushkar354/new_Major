@@ -1,14 +1,28 @@
 const bcrypt=require("bcrypt");
-Register_controller=(req,res)=>{
+const { User_model } = require("../Database/Schema/user");
+const Register_controller=async(req,res)=>{
     try{
         const {email,password}=req.body;
         if(!email||!password){
-            res.send("Invalid input");
+            res.status(500).json({success:false,message:"Invalid input"});
         }
+        const user=User_model.findOne({email:email});
+        if(user){
+            res.status(500).json({success:false, message:"user exists"});
+        }
+        
         const hashPassword=bcrypt.hash(password,10);
 
+        const user_created=new User_model({
+             email:email,
+             password:hashPassword
+        })
+        console.log(user_created);
+         await user_created.save();
+         res.status(200).json({success:true,user:user_created});
     }catch(error){
         console.log(error);
+        res.status(500).json({success:false,message:error.message});
     }
 }
 
