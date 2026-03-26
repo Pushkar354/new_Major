@@ -1,0 +1,69 @@
+const { GoogleGenAI } = require("@google/genai");
+const YoutubeVideo=async(req,res)=>{
+    const{query}=req.body;
+    if(!query){
+        res.status(200).json({success:false,msg:"invalid query"})
+    }
+  const videos=await SemanticSearch(query);
+  if(!videos){
+    res.status(200).json({success:false,msg:"invalid query"})
+  }
+   res.status(400).json({success:true,data:videos});
+}
+const fetchyoutube=async(query,maxResults)=>{
+    try{
+   const {data}=await axios.get("https://www.googleapis.com/youtube/v3/search",{
+      params: {
+        part: "snippet",
+        q: query,
+        type: "video",
+        maxResults,
+        key: process.env.YOUTUBE_API_KEY,
+      },
+   })
+    }catch(err){
+        console.log(err);
+    }
+}
+
+const getEmbedding=async(text)=>{
+try {
+     const ai = new GoogleGenAI({});
+     const model = ai.getGenerativeModel({ model: "embedding-001" });
+const res = await model.embedContent(text);
+    const embedding = res.embedding.values;
+    return embedding;
+  } catch (err) {
+    console.error("Embedding error:", err.message);
+    return null;
+  }
+}
+
+
+const cosineSimilarity=(vecA,vecB)=>{
+ const dot=vecA.reduce((sum,a,i)=>sum+a*vecB[i],0);
+  const magA = Math.sqrt(vecA.reduce((sum, a) => sum + a * a, 0));
+  const magB = Math.sqrt(vecB.reduce((sum, b) => sum + b * b, 0));
+  return dot / (magA * magB);
+}
+const SemanticSearch=async(query)=>{
+const videos=await fetchyoutube(query,30);
+ if (!videos.length) {
+    console.log("No videos found.");
+    return;
+  }
+   const queryEmbedding = await getEmbedding(query);
+  if (!queryEmbedding) return;
+
+   for (let video of videos) {
+    const text = `${video.title} ${video.description}`;
+    const videoEmbedding = await getEmbedding(text);
+    if (!videoEmbedding) continue;
+    video.similarity = cosineSimilarity(queryEmbedding, videoEmbedding);
+  }
+videos.sort((a, b) => b.similarity - a.similarity);
+
+  return videos;
+  
+}
+module.exports=YoutubeVideo
