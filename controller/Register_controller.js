@@ -8,10 +8,10 @@ const Register_controller=async(req,res)=>{
         }
         const user=User_model.findOne({email:email});
         if(user){
-            res.status(500).json({success:false, message:"user exists"});
+            return res.status(500).json({success:false, message:"user exists"});
         }
         
-        const hashPassword=bcrypt.hash(password,10);
+        const hashPassword=await bcrypt.hash(password,10);
 
         const user_created=new User_model({
              email:email,

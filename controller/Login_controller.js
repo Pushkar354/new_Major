@@ -8,19 +8,19 @@ const { User_model } = require('../Database/Schema/user');
 
         const {email,password}=req.body;
         if(!email||!password){
-          res.status(500).json({success:false,message:"Invalid input"});
+         return res.status(500).json({success:false,message:"Invalid input"});
         }
-        const user=User_model.findOne({email:email});
+        const user=await User_model.findOne({email:email});
         if(!user){
-            res.status(500).json({success:false,message:"user does not exits"});
+          return   res.status(500).json({success:false,message:"user does not exits"});
         }
         const hashedPassword=user.password;
         const checkhash=await bcrypt.compare(password,hashedPassword);
         if(checkhash){
           const token=  jwt.sign({email:email},process.env.JWT_SECRET);
-          res.status(200).json({success:true,token:token,})
+         return res.status(200).json({success:true,token:token,})
         }else{
-            res.status(500).json({success:false,message:"invalid attempt"});
+           return res.status(500).json({success:false,message:"invalid attempt"});
         }
     }catch(err){
         console.log(err);

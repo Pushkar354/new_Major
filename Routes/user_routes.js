@@ -8,8 +8,8 @@ const YoutubeVideo = require('../controller/YoutubeVideo_Controller');
 const Authorization = require('../controller/Authorization');
 const user_router=express.Router();
 
-user_router.post("/login",Authorization,Login_controller);
-user_router.post("/register",Authorization,Register_controller);
+user_router.post("/login",Login_controller);
+user_router.post("/register",Register_controller);
 user_router.post("/generatepdf",Authorization,GeneratePdf_Controller);
 user_router.post("/syllabus",Authorization,Syllabus_controller);
 user_router.post("/generateQuizz",Authorization,Quizz_controller);

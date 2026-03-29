@@ -1,7 +1,7 @@
 const pdf=require('pdf-parse');
-const extract_text=async(module)=>{
+const extract_text=async(modules)=>{
 
-    const data=await pdf(module);
+    const data=await pdf(modules);
     return data.text;
 }
 const Split_into_chunks=(text,size)=>{

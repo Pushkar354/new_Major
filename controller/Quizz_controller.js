@@ -1,5 +1,5 @@
 const { GoogleGenAI } = require("@google/genai");
-const {v4}=require('uuid');
+const { v4: uuidv4 } = require('uuid');
 const { Quiz_model, Course_model } = require("../Database/Schema/user");
 
 const { extract_text, Split_into_chunks } = require("./pdf_data_extract");
