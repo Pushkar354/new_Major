@@ -24,7 +24,7 @@ const fetchyoutube=async(query,maxResults)=>{
    const videos=data.items.map(video=>({id:video.id.videosId,
     title:video.snippet.title,
     description:video.snippet.description,
-    thumbnail:video.snippet.thumbnails.medium.url;
+    thumbnail:video.snippet.thumbnails.medium.url,
     url:`https://www.youtube.com/watch?v=${video.id.videoId}`
    }))
    return videos;
