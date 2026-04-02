@@ -21,6 +21,14 @@ const fetchyoutube=async(query,maxResults)=>{
         key: process.env.YOUTUBE_API_KEY,
       },
    })
+   const videos=data.items.map(video=>({id:video.id.videosId,
+    title:video.snippet.title,
+    description:video.snippet.description,
+    thumbnail:video.snippet.thumbnails.medium.url;
+    url:`https://www.youtube.com/watch?v=${video.id.videoId}`
+   }))
+   return videos;
+
     }catch(err){
         console.log(err);
     }
@@ -47,7 +55,7 @@ const cosineSimilarity=(vecA,vecB)=>{
   return dot / (magA * magB);
 }
 const SemanticSearch=async(query)=>{
-const videos=await fetchyoutube(query,30);
+const videos=await fetchyoutube(query,20);
  if (!videos.length) {
     console.log("No videos found.");
     return;
