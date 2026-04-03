@@ -1,14 +1,15 @@
-const { GoogleGenAI } = require("@google/genai");
+const { GoogleGenAI} = require("@google/genai");
+const axios=require('axios');
 const YoutubeVideo=async(req,res)=>{
     const{query}=req.body;
     if(!query){
-        res.status(200).json({success:false,msg:"invalid query"})
+        res.status(400).json({success:false,msg:"invalid query"})
     }
   const videos=await SemanticSearch(query);
   if(!videos){
-    res.status(200).json({success:false,msg:"invalid query"})
+    res.status(400).json({success:false,msg:"invalid query"})
   }
-   res.status(400).json({success:true,data:videos});
+   res.status(200).json({success:true,data:videos});
 }
 const fetchyoutube=async(query,maxResults)=>{
     try{
@@ -21,11 +22,12 @@ const fetchyoutube=async(query,maxResults)=>{
         key: process.env.YOUTUBE_API_KEY,
       },
    })
-   const videos=data.items.map(video=>({id:video.id.videosId,
+   const videos=data.items.map(video=>({id:video.id.videoId,
     title:video.snippet.title,
     description:video.snippet.description,
     thumbnail:video.snippet.thumbnails.medium.url,
-    url:`https://www.youtube.com/watch?v=${video.id.videoId}`
+    url:`https://www.youtube.com/watch?v=${video.id.videoId}`,
+    similarity:0
    }))
    return videos;
 
@@ -37,9 +39,9 @@ const fetchyoutube=async(query,maxResults)=>{
 const getEmbedding=async(text)=>{
 try {
      const ai = new GoogleGenAI({});
-     const model = ai.getGenerativeModel({ model: "embedding-001" });
-const res = await model.embedContent(text);
-    const embedding = res.embedding.values;
+     const res = await ai.models.embedContent({ model: 'gemini-embedding-001',contents: text });
+
+    const embedding =  res.embeddings[0].values;
     return embedding;
   } catch (err) {
     console.error("Embedding error:", err.message);
@@ -52,6 +54,7 @@ const cosineSimilarity=(vecA,vecB)=>{
  const dot=vecA.reduce((sum,a,i)=>sum+a*vecB[i],0);
   const magA = Math.sqrt(vecA.reduce((sum, a) => sum + a * a, 0));
   const magB = Math.sqrt(vecB.reduce((sum, b) => sum + b * b, 0));
+   if (magA === 0 || magB === 0) return 0;
   return dot / (magA * magB);
 }
 const SemanticSearch=async(query)=>{
@@ -64,7 +67,7 @@ const videos=await fetchyoutube(query,20);
   if (!queryEmbedding) return;
 
    for (let video of videos) {
-    const text = `${video.title} ${video.description}`;
+    const text = `${video.title}  , ${video.description}`;
     const videoEmbedding = await getEmbedding(text);
     if (!videoEmbedding) continue;
     video.similarity = cosineSimilarity(queryEmbedding, videoEmbedding);
