@@ -58,7 +58,7 @@ const cosineSimilarity=(vecA,vecB)=>{
   return dot / (magA * magB);
 }
 const SemanticSearch=async(query)=>{
-const videos=await fetchyoutube(query,20);
+const videos=await fetchyoutube(query,10);
  if (!videos.length) {
     console.log("No videos found.");
     return;
