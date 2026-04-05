@@ -1,36 +1,50 @@
 const { Syllabus_model } = require("../Database/Schema/user");
-
+const Pdf = require("pdfkit");
 const generatePdf = async(email,topic,modules)=>{
-try{
+ return new Promise((resolve, reject) => {
+    try {
+      const doc = new Pdf();
+      const chunks = [];
 
- const doc = new Pdf();
- const chunks = [];
+      doc.on("data", chunk => chunks.push(chunk));
 
- doc.on("data",chunk=>chunks.push(chunk));
- doc.on("end",async()=>{
-    const pdf= Buffer.concat(chunks);
-    const Syllabus=new Syllabus_model({
-          email:email,
-          topic:topic,
-          data:pdf
-    })
-await Syllabus.save();
-return Syllabus;
-});
+      doc.on("end", async () => {
+        try {
+          const pdf = Buffer.concat(chunks);
 
- doc.fontSize(30).text(topic,{align:'center'});
- doc.moveDown();
+          const Syllabus = new Syllabus_model({
+            email: email,
+            topic: topic,
+            data: pdf
+          });
 
- modules.forEach(m=>{
-    doc.fontSize(22).text(m.title,{align:'left'});
-    doc.moveDown();
-    doc.fontSize(22).text(m.content,{align:'left'});
-    doc.moveDown();
- });
+          await Syllabus.save();
 
- doc.end();
+          resolve(Syllabus); // ✅ THIS sends data back
+        } catch (err) {
+          reject(err);
+        }
+      });
 
-}catch(err){
- console.log(err);
-}}
+      doc.on("error", err => reject(err));
+
+      // PDF content
+      doc.fontSize(30).text(topic, { align: 'center' });
+      doc.moveDown();
+
+      modules.forEach(m => {
+        doc.fontSize(22).text(m.title, { align: 'left' });
+        doc.moveDown();
+        doc.fontSize(16).text(m.content, { align: 'left' });
+        doc.moveDown();
+      });
+
+      doc.end();
+
+    } catch (err) {
+      throw new Error(err.message);
+      reject(err);
+    }
+  });
+};
 module.exports=generatePdf;

@@ -1,4 +1,6 @@
 const { Course_model } = require("../Database/Schema/user");
+const Pdf = require("pdfkit");
+const {GoogleGenAI}=require('@google/genai');
 const courseGenerator=async(hours,modules)=>{
    const prompt = `
 Generate detailed lesson content.
@@ -33,7 +35,7 @@ Return ONLY valid JSON:
  ]
 }
 `;
-
+ const ai=new GoogleGenAI({});
  const generatedCourse = await ai.models.generateContent({
    model:"gemini-3-flash-preview",
    contents: prompt
@@ -45,51 +47,65 @@ Return ONLY valid JSON:
 return JSON.parse(text);
 }
 
-const Generate_course = async (email,hours,modules)=>{
+const Generate_course = async (email,topic,hours,modules)=>{
   
 
 try{
    const arr=[];
    const Course_data= await courseGenerator(hours,modules);
    
-   Course_data.modules.forEach(e => {
-      const obj={};
-      const doc=new Pdf();
-      const chunks=[];
-      doc.on('data',chunk=>chunks.push(chunk));
-      doc.on('end', ()=>{
-         obj.filename=e.title;
-         obj.data=Buffer.concat(chunks);
-         arr.push(obj);
-      });
-      doc.fontSize(30).text(e.title,{align:'center'});
-      doc.moveDown();
-      e.lessons.forEach(lesson => {
-          doc.fontSize(22).text(lesson.title,{align:'left'});
-          doc.moveDown();
-          doc.fontSize(18).text(lesson.explanation,{align:'left'});
-          doc.moveDown();
-          doc.fontSize(18).text(lesson.example,{align:'left'});
-          doc.moveDown();
-          doc.fontSize(18).text(lesson.real_world_usage,{align:'left'});
-          doc.moveDown();
-          doc.fontSize(18).text(lesson.summary,{align:'left'});
-          doc.moveDown();
-      });
-      doc.end();
-   });
-    const Course=  new Course_model({
-      email:email,
-      topic:topic,
-      modules:arr
-    })
-    await Course.save();
-    console.log("Course generated succesfully");
-    return Course;
-}catch(err){
-   res.status(500).send("Course generation failed");
-}
+    for (const e of Course_data.modules) {
+      const pdfBuffer = await new Promise((resolve, reject) => {
+        const doc = new Pdf();
+        const chunks = [];
 
-}
+        doc.on('data', chunk => chunks.push(chunk));
+        doc.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('error', reject);
+
+        doc.fontSize(30).text(e.title, { align: 'center' });
+        doc.moveDown();
+
+        e.lessons.forEach(lesson => {
+          doc.fontSize(22).text(lesson.title);
+          doc.moveDown();
+          doc.fontSize(18).text(lesson.explanation);
+          doc.moveDown();
+          doc.fontSize(18).text(lesson.example);
+          doc.moveDown();
+          doc.fontSize(18).text(lesson.real_world_usage);
+          doc.moveDown();
+          doc.fontSize(18).text(lesson.summary);
+          doc.moveDown();
+        });
+
+        doc.end();
+      });
+
+      arr.push({
+        filename: e.title,
+        modules: await pdfBuffer
+      });
+    }
+
+   
+    const Course = new Course_model({
+      email,
+      topic,
+      data: arr
+    });
+
+    await Course.save();
+
+    console.log("Course generated successfully");
+
+    return Course;
+
+  } catch (err) {
+   throw new Error(err.message);
+  }
+};
+
+
 
 module.exports = Generate_course;

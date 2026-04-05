@@ -1,4 +1,4 @@
-const Pdf = require("pdfkit");
+
 
 const Generate_course = require("./GenerateCourse_controller");
 const generatePdf = require("./Syllabuspdf_Controller");
@@ -16,17 +16,19 @@ if(!topic || !hours  || !Array.isArray(modules)){
 
 try{
 
- const pdf = await generatePdf(email,topic,modules);
- const Course=await Generate_course(email,hours,modules);
+generatePdf(email, topic, modules).catch(err => {
+  console.error("PDF generation failed:", err);
+});
+ const Course=await Generate_course(email,topic,hours,modules);
 
-res.json({
+return res.json({
    success:true,
-   syllabus:pdf,
    course:Course
 })
 
 }catch(err){
  res.status(500).json({
+   msg:err.message,
    success:false
  });
 }

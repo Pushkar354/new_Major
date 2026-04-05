@@ -6,7 +6,7 @@ const Register_controller=async(req,res)=>{
         if(!email||!password){
             res.status(500).json({success:false,message:"Invalid input"});
         }
-        const user=User_model.findOne({email:email});
+        const user=await User_model.findOne({email:email});
         if(user){
             return res.status(500).json({success:false, message:"user exists"});
         }

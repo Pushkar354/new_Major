@@ -24,14 +24,13 @@ const Syllabus_Schema=new moongose.Schema({
 })
 const pdf_Schema = new moongose.Schema({
   filename: { type: String, required: true },
-  data: { type: Buffer, required: true }, // PDF binary data
+  modules: { type: Buffer, required: true }, // PDF binary data
   contentType: { type: String, default: 'application/pdf' }
 });
 const Course_Schema=new moongose.Schema({
     email:String,
     topic:String,
-    data:{type:Buffer,required:true},
-    modules:[pdf_Schema],
+    data:[pdf_Schema],
      createdAt: { type: Date, default: Date.now }
 
 })
