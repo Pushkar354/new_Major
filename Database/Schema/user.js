@@ -36,6 +36,7 @@ const Course_Schema=new moongose.Schema({
 
 })
 const Module_quiz=new moongose.Schema({
+  
         question:String,
         options:[String],
         answer:String

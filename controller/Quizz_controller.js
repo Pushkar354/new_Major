@@ -119,21 +119,5 @@ const Quizz=async(req,res)=>{
     }
 
 }
-const Quizz_controller=async(topic,modules)=>{
-    const quiz_obj=[];
-    modules.forEach(e => {
-        try{
 
-            const quiz=generate_quiz(JSON.stringify(e.lessons));
-             quiz_obj.push(quiz);
-
-        }catch(err){
-            console.log(err);
-            res.status(500).json({success:false,message:err.message});
-        }
-        
-    });
-  
-
-}
 module.exports=Quizz;
