@@ -5,45 +5,84 @@ const { Quiz_model, Course_model } = require("../Database/Schema/user");
 const { extract_text, Split_into_chunks } = require("./pdf_data_extract");
 
 const generate_quiz=async(chunks)=>{
-try{
+
     const ai = new GoogleGenAI({});
-    const allQuestions=[];
-    for(const i=0;i<chunks.length;i++){
+   
+      const MAX_QUESTIONS = 50;
 
-        const prompt = `
-        You are a quiz generator. Based on the following notes, create exactly 15 multiple-choice questions.
-        Each question must have:
-        - "question": string
-        - "options": array of 4 strings
-        - "answer": the correct option string
-        
-        Return ONLY valid JSON in the following format:
-        [
-            {
-                "question": "...",
-                "options": ["...", "...", "...", "..."],
-                "answer": "..."
-                }
-                ] Study material: ${chunks[i]}`
-                const response=await ai.models.generateContent({
-                    model:"gemini-3-flash-preview",
-                    contents:prompt
-                })
-               const rawText = response.text();
-      const jsonStart = rawText.indexOf("[");
-      const jsonEnd = rawText.lastIndexOf("]") + 1;
-        const cleanJson = rawText.slice(jsonStart, jsonEnd);
-      const questions = JSON.parse(cleanJson);
-      allQuestions.push(...questions);
-               
-            }
-                
-                return allQuestions;
+  const promises = chunks.map(async (chunk, index) => {
+    try {
+      const prompt = `
+You are a strict JSON generator.
 
-}catch(err){
-     console.error("Quiz generation failed:", err);
-    throw new Error("Failed to generate quiz");
-}
+Generate EXACTLY 15 multiple-choice questions.
+
+Rules:
+- Return ONLY a JSON array
+- NO explanation text
+- NO markdown
+- NO extra characters
+- Each object must have:
+  - "question": string
+  - "options": array of exactly 4 strings
+  - "answer": must match one option exactly
+
+Format:
+[
+  {
+    "question": "...",
+    "options": ["...", "...", "...", "..."],
+    "answer": "..."
+  }
+]
+
+Study material:
+${chunk}
+`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt
+      });
+
+      const rawText = response.text;
+
+      
+      const start = rawText.indexOf("[");
+      const end = rawText.lastIndexOf("]") + 1;
+
+      if (start === -1 || end === -1) {
+        console.error(`Chunk ${index}: Invalid JSON format`);
+        return [];
+      }
+
+      const parsed = JSON.parse(rawText.slice(start, end));
+
+      
+      const validQuestions = parsed.filter(q =>
+        q &&
+        typeof q.question === "string" &&
+        Array.isArray(q.options) &&
+        q.options.length === 4 &&
+        q.options.every(opt => typeof opt === "string") &&
+        typeof q.answer === "string" &&
+        q.options.includes(q.answer)
+      );
+
+      return validQuestions;
+
+    } catch (err) {
+      console.error(`Chunk ${index} failed:`, err.message);
+      return [];
+    }
+  });
+    const results = await Promise.all(promises);
+     let allQuestions = results.flat();
+     if (allQuestions.length > MAX_QUESTIONS) {
+    allQuestions = allQuestions.slice(0, MAX_QUESTIONS);
+  }
+
+  return allQuestions;
 }
 const Quizz=async(req,res)=>{
     
@@ -55,21 +94,20 @@ const Quizz=async(req,res)=>{
         }
 
         
-        const course=Course_model.find({topic:topic,email:email});
-        
-        const modules=course.modules;
+        const course=await Course_model.findOne({topic:topic,email:email});
+        const modules=course.data;
         const quiz_obj=[];
-        modules.forEach(async(e)=>{
-            const text=await extract_text(e);
-            const data= Split_into_chunks(e,3000);
+        for (const e of modules) {
+            const text=await extract_text(e.modules);
+            const data= Split_into_chunks(text,3000);
             const quiz=await generate_quiz(data);
             quiz_obj.push(quiz);
-        })
+        }
      
 
 
           const generated_quiz=new Quiz_model({
-        id:v4(),
+        email:email,
         topic:topic,
         quiz:quiz_obj 
     })
@@ -98,4 +136,4 @@ const Quizz_controller=async(topic,modules)=>{
   
 
 }
-module.exports=Quizz_controller;
+module.exports=Quizz;

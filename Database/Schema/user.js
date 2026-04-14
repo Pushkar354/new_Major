@@ -1,4 +1,5 @@
 const moongose=require('mongoose');
+const { options } = require('pdfkit');
 
 Connect_todb=()=>{
 
@@ -35,10 +36,13 @@ const Course_Schema=new moongose.Schema({
 
 })
 const Module_quiz=new moongose.Schema({
-    quiz:{type: moongose.Schema.Types.Mixed, required: true}
+        question:String,
+        options:[String],
+        answer:String
+    
 })
 const Quiz_Schema=new moongose.Schema({
-    id:String,
+    email:String,
     topic:String,
     quiz:[Module_quiz],
     createdAt:{type:Date,default:Date.now}
