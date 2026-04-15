@@ -2,20 +2,29 @@ const { GoogleGenAI } = require("@google/genai");
 const { v4: uuidv4 } = require('uuid');
 const { Quiz_model, Course_model } = require("../Database/Schema/user");
 
-const { extract_text, Split_into_chunks } = require("./pdf_data_extract");
+const { extract_text, Split_into_chunks, handleRateLimit } = require("./pdf_data_extract");
 
-const generate_quiz=async(chunks)=>{
+const generate_quiz = async (chunks) => {
 
-    const ai = new GoogleGenAI({});
-   
-      const MAX_QUESTIONS = 50;
+  const ai = new GoogleGenAI({});
+  let allQuestions = [];
+  const MAX_QUESTIONS = 50;
+  let API_CALL_COUNT = 0;
+  const MAX_DAILY_CALLS = 18;
 
-  const promises = chunks.map(async (chunk, index) => {
+  for (let index = 0; index < chunks.length; index++) {
+    const chunk = chunks[index];
+
+    if (API_CALL_COUNT >= MAX_DAILY_CALLS) {
+      console.log("Daily quota reached");
+      break;
+    }
+
     try {
       const prompt = `
 You are a strict JSON generator.
 
-Generate EXACTLY 15 multiple-choice questions.
+Generate EXACTLY 5 multiple-choice questions.
 
 Rules:
 - Return ONLY a JSON array
@@ -41,56 +50,51 @@ ${chunk}
 `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.1-flash-lite-preview",
         contents: prompt
       });
 
+      API_CALL_COUNT++; 
+
       const rawText = response.text;
 
-      
       const start = rawText.indexOf("[");
       const end = rawText.lastIndexOf("]") + 1;
 
       if (start === -1 || end === -1) {
         console.error(`Chunk ${index}: Invalid JSON format`);
-        return [];
+        continue; // ❗ don't return, just skip
       }
 
-      const parsed = JSON.parse(rawText.slice(start, end));
+      let parsed = [];
+      try {
+        parsed = JSON.parse(rawText.slice(start, end));
+      } catch {
+        console.error(`Chunk ${index}: JSON parse failed`);
+        continue;
+      }
 
-      
-      const validQuestions = parsed.filter(q =>
-        q &&
-        typeof q.question === "string" &&
-        Array.isArray(q.options) &&
-        q.options.length === 4 &&
-        q.options.every(opt => typeof opt === "string") &&
-        typeof q.answer === "string" &&
-        q.options.includes(q.answer)
-      );
-
-      return validQuestions;
+      allQuestions.push(...parsed);
 
     } catch (err) {
       console.error(`Chunk ${index} failed:`, err.message);
-      return [];
+      continue; // ❗ don't return, continue loop
     }
-  });
-    const results = await Promise.all(promises);
-     let allQuestions = results.flat();
-     if (allQuestions.length > MAX_QUESTIONS) {
+  }
+
+  if (allQuestions.length > MAX_QUESTIONS) {
     allQuestions = allQuestions.slice(0, MAX_QUESTIONS);
   }
 
   return allQuestions;
-}
+};
 const Quizz=async(req,res)=>{
     
     try{
 
         const {topic,email}=req.body;
         if(!topic||!email){
-              res.status(500).json({success:false,message:"Invalid request"});
+             return res.status(500).json({success:false,message:"Invalid request"});
         }
 
         
@@ -98,10 +102,16 @@ const Quizz=async(req,res)=>{
         const modules=course.data;
         const quiz_obj=[];
         for (const e of modules) {
-            const text=await extract_text(e.modules);
-            const data= Split_into_chunks(text,3000);
-            const quiz=await generate_quiz(data);
-            quiz_obj.push(quiz);
+            const text=await extract_text(e.modules); 
+            const quiz=await generate_quiz([text]);
+            if(quiz.length!=0){
+
+              quiz_obj.push(...quiz);
+            }
+        }
+        if(quiz_obj.length<=10){
+           throw new Error("Quiz not generated");
+         
         }
      
 
@@ -112,10 +122,13 @@ const Quizz=async(req,res)=>{
         quiz:quiz_obj 
     })
     await generated_quiz.save();
-    return generated_quiz;
+    return res.status(200).json({
+      success:true,
+      quizz:generated_quiz
+    }) 
 
     }catch(err){
-        res.status(500).json({success:false,message:err.message});
+       throw new Error(err.message);
     }
 
 }
