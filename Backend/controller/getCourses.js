@@ -2,7 +2,7 @@ const { Course_model } = require("../Database/Schema/user");
 
 const getCourses = async (req, res) => {
   try {
-    const email = req.user.email;
+    const email = req.body.email;
 
     console.log("EMAIL:", email);
 
