@@ -24,7 +24,7 @@ const generate_quiz = async (chunks) => {
       const prompt = `
 You are a strict JSON generator.
 
-Generate EXACTLY 5 multiple-choice questions.
+Generate EXACTLY 5 multiple-choice questions from each Module.
 
 Rules:
 - Return ONLY a JSON array
@@ -59,16 +59,16 @@ ${chunk}
       const rawText = response.text;
 
       const start = rawText.indexOf("[");
-      const end = rawText.lastIndexOf("]") + 1;
+      const end = rawText.lastIndexOf("]") ;
 
       if (start === -1 || end === -1) {
         console.error(`Chunk ${index}: Invalid JSON format`);
-        continue; // ❗ don't return, just skip
+        continue; 
       }
 
       let parsed = [];
       try {
-        parsed = JSON.parse(rawText.slice(start, end));
+        parsed = JSON.parse(rawText.slice(start, end+1));
       } catch {
         console.error(`Chunk ${index}: JSON parse failed`);
         continue;
@@ -100,26 +100,26 @@ const Quizz=async(req,res)=>{
         
         const course=await Course_model.findOne({topic:topic,email:email});
         const modules=course.data;
-        const quiz_obj=[];
+        
+        let i=1;
+        let newtext=" ";
         for (const e of modules) {
             const text=await extract_text(e.modules); 
-            const quiz=await generate_quiz([text]);
-            if(quiz.length!=0){
-
-              quiz_obj.push(...quiz);
+             newtext= `${newtext} Module-${i}   ${text} `;
+             
+             i++;
             }
-        }
-        if(quiz_obj.length<=10){
-           throw new Error("Quiz not generated");
-         
-        }
+            const quiz=await generate_quiz([newtext]);
+            if(quiz.length<=10){
+              throw new Error("Quiz Generation falied");
+            }
      
 
 
           const generated_quiz=new Quiz_model({
         email:email,
         topic:topic,
-        quiz:quiz_obj 
+        quiz:quiz
     })
     await generated_quiz.save();
     return res.status(200).json({
