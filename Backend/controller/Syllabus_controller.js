@@ -37,15 +37,24 @@ Return ONLY valid JSON:
 }
 `
  });
- let text = response.candidates[0].content.parts[0].text;
+
+ 
+ let text = response.text;
+
+ 
  text = text.replace(/```json|```/g,"").trim();
+
  const data = JSON.parse(text);
+
  res.json(data);
+
 }catch(err){
+
  console.error(err);
  res.status(500).json({error:"AI generation failed"});
-}
+
 }
 
+}
 
 module.exports = Syllabus_controller;
