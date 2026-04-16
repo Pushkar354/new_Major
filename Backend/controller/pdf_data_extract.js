@@ -11,4 +11,5 @@ for(let i=0;i<text.length;i+=size){
 }
 return chunks;
 }
+
 module.exports={extract_text,Split_into_chunks}

@@ -1,4 +1,5 @@
 const moongose=require('mongoose');
+const { options } = require('pdfkit');
 
 const Connect_todb=()=>{
 
@@ -27,15 +28,23 @@ const Syllabus_Schema=new moongose.Schema({
 })
 const pdf_Schema = new moongose.Schema({
   filename: { type: String, required: true },
-  data: { type: Buffer, required: true }, // PDF binary data
+  modules: { type: Buffer, required: true }, // PDF binary data
   contentType: { type: String, default: 'application/pdf' }
 });
+<<<<<<< HEAD:Backend/Database/Schema/user.js
 // const Course_Schema=new moongose.Schema({
 //     email:String,
 //     topic:String,
 //     data:{type:Buffer,required:true},
 //     modules:[pdf_Schema],
 //      createdAt: { type: Date, default: Date.now }
+=======
+const Course_Schema=new moongose.Schema({
+    email:String,
+    topic:String,
+    data:[pdf_Schema],
+     createdAt: { type: Date, default: Date.now }
+>>>>>>> 3fc1d624e1824bb0d3a8de905784454cb441fd50:Database/Schema/user.js
 
 // })
 const Course_Schema = new moongose.Schema({
@@ -45,10 +54,14 @@ const Course_Schema = new moongose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 const Module_quiz=new moongose.Schema({
-    quiz:{type: moongose.Schema.Types.Mixed, required: true}
+  
+        question:String,
+        options:[String],
+        answer:String
+    
 })
 const Quiz_Schema=new moongose.Schema({
-    id:String,
+    email:String,
     topic:String,
     quiz:[Module_quiz],
     createdAt:{type:Date,default:Date.now}

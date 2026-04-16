@@ -2,100 +2,135 @@ const { GoogleGenAI } = require("@google/genai");
 const { v4: uuidv4 } = require('uuid');
 const { Quiz_model, Course_model } = require("../Database/Schema/user");
 
-const { extract_text, Split_into_chunks } = require("./pdf_data_extract");
+const { extract_text, Split_into_chunks, handleRateLimit } = require("./pdf_data_extract");
 
-const generate_quiz=async(chunks)=>{
-try{
-    const ai = new GoogleGenAI({});
-    const allQuestions=[];
-    for(const i=0;i<chunks.length;i++){
+const generate_quiz = async (chunks) => {
 
-        const prompt = `
-        You are a quiz generator. Based on the following notes, create exactly 15 multiple-choice questions.
-        Each question must have:
-        - "question": string
-        - "options": array of 4 strings
-        - "answer": the correct option string
-        
-        Return ONLY valid JSON in the following format:
-        [
-            {
-                "question": "...",
-                "options": ["...", "...", "...", "..."],
-                "answer": "..."
-                }
-                ] Study material: ${chunks[i]}`
-                const response=await ai.models.generateContent({
-                    model:"gemini-3-flash-preview",
-                    contents:prompt
-                })
-               const rawText = response.text();
-      const jsonStart = rawText.indexOf("[");
-      const jsonEnd = rawText.lastIndexOf("]") + 1;
-        const cleanJson = rawText.slice(jsonStart, jsonEnd);
-      const questions = JSON.parse(cleanJson);
-      allQuestions.push(...questions);
-               
-            }
-                
-                return allQuestions;
+  const ai = new GoogleGenAI({});
+  let allQuestions = [];
+  const MAX_QUESTIONS = 50;
+  let API_CALL_COUNT = 0;
+  const MAX_DAILY_CALLS = 18;
 
-}catch(err){
-     console.error("Quiz generation failed:", err);
-    throw new Error("Failed to generate quiz");
-}
-}
+  for (let index = 0; index < chunks.length; index++) {
+    const chunk = chunks[index];
+
+    if (API_CALL_COUNT >= MAX_DAILY_CALLS) {
+      console.log("Daily quota reached");
+      break;
+    }
+
+    try {
+      const prompt = `
+You are a strict JSON generator.
+
+Generate EXACTLY 5 multiple-choice questions from each Module.
+
+Rules:
+- Return ONLY a JSON array
+- NO explanation text
+- NO markdown
+- NO extra characters
+- Each object must have:
+  - "question": string
+  - "options": array of exactly 4 strings
+  - "answer": must match one option exactly
+
+Format:
+[
+  {
+    "question": "...",
+    "options": ["...", "...", "...", "..."],
+    "answer": "..."
+  }
+]
+
+Study material:
+${chunk}
+`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-flash-lite-preview",
+        contents: prompt
+      });
+
+      API_CALL_COUNT++; 
+
+      const rawText = response.text;
+
+      const start = rawText.indexOf("[");
+      const end = rawText.lastIndexOf("]") ;
+
+      if (start === -1 || end === -1) {
+        console.error(`Chunk ${index}: Invalid JSON format`);
+        continue; 
+      }
+
+      let parsed = [];
+      try {
+        parsed = JSON.parse(rawText.slice(start, end+1));
+      } catch {
+        console.error(`Chunk ${index}: JSON parse failed`);
+        continue;
+      }
+
+      allQuestions.push(...parsed);
+
+    } catch (err) {
+      console.error(`Chunk ${index} failed:`, err.message);
+      continue; // ❗ don't return, continue loop
+    }
+  }
+
+  if (allQuestions.length > MAX_QUESTIONS) {
+    allQuestions = allQuestions.slice(0, MAX_QUESTIONS);
+  }
+
+  return allQuestions;
+};
 const Quizz=async(req,res)=>{
     
     try{
 
         const {topic,email}=req.body;
         if(!topic||!email){
-              res.status(500).json({success:false,message:"Invalid request"});
+             return res.status(500).json({success:false,message:"Invalid request"});
         }
 
         
-        const course=Course_model.find({topic:topic,email:email});
+        const course=await Course_model.findOne({topic:topic,email:email});
+        const modules=course.data;
         
-        const modules=course.modules;
-        const quiz_obj=[];
-        modules.forEach(async(e)=>{
-            const text=await extract_text(e);
-            const data= Split_into_chunks(e,3000);
-            const quiz=await generate_quiz(data);
-            quiz_obj.push(quiz);
-        })
+        let i=1;
+        let newtext=" ";
+        for (const e of modules) {
+            const text=await extract_text(e.modules); 
+             newtext= `${newtext} Module-${i}   ${text} `;
+             
+             i++;
+            }
+            const quiz=await generate_quiz([newtext]);
+            if(quiz.length<=10){
+              throw new Error("Quiz Generation falied");
+            }
      
 
 
           const generated_quiz=new Quiz_model({
-        id:v4(),
+        email:email,
         topic:topic,
-        quiz:quiz_obj 
+        quiz:quiz
     })
     await generated_quiz.save();
-    return generated_quiz;
+    return res.status(200).json({
+      success:true,
+      quizz:generated_quiz
+    }) 
 
     }catch(err){
-        res.status(500).json({success:false,message:err.message});
+       throw new Error(err.message);
     }
 
 }
-const Quizz_controller=async(topic,modules)=>{
-    const quiz_obj=[];
-    modules.forEach(e => {
-        try{
 
-            const quiz=generate_quiz(JSON.stringify(e.lessons));
-             quiz_obj.push(quiz);
-
-        }catch(err){
-            console.log(err);
-            res.status(500).json({success:false,message:err.message});
-        }
-        
-    });
-  
-
-}
-module.exports=Quizz_controller;
+module.exports=Quizz;
