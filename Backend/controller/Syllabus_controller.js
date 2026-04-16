@@ -38,10 +38,10 @@ Return ONLY valid JSON:
 `
  });
 
- // extract text
+ 
  let text = response.text;
 
- // remove markdown if present
+ 
  text = text.replace(/```json|```/g,"").trim();
 
  const data = JSON.parse(text);
