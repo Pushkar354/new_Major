@@ -12,6 +12,7 @@ app.use(cors({
   credentials: true
 }));
 
+Connect_todb();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -20,7 +21,6 @@ const user_router = require("./Routes/user_routes.js");
 app.use("/user", user_router);
 
 
-Connect_todb();
 
 
 app.get("/", (req, res) => {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -6,6 +6,7 @@ export function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   
 
   const handleLogin = async () => {
@@ -21,10 +22,12 @@ export function Login() {
 
     if (res.ok) {
       alert("Login successfull");
+      localStorage.setItem("email",email)
       localStorage.setItem("token", data.token);
+   
       return true;
     } else {
-      alert("User exist");
+      alert("Wrong info");
       return false;
     }
     

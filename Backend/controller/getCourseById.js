@@ -2,7 +2,7 @@ const { Course_model } = require("../Database/Schema/user");
 
 const getCourseById = async (req, res) => {
   try {
-    const email=req.body.email;
+    const email=req.user.email;
     const course = await Course_model.findOne({
     
       email: email,

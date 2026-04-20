@@ -3,8 +3,8 @@ const { options } = require('pdfkit');
 
 Connect_todb=()=>{
 
-    moongose.connect(process.env.MONGO_URI,{ useNewUrlParser: true,
-    useUnifiedTopology: true}).then(() => console.log("Database connected")).catch((error)=>{console.log(error)});
+    moongose.connect(process.env.MONGO_URI,
+   ).then(() => console.log("Database connected")).catch((error)=>{console.log(error)});
 }
 
 const user_Schema=new moongose.Schema({
@@ -12,6 +12,7 @@ const user_Schema=new moongose.Schema({
         unique:true,
         required:true
     },
+    name:String,
     password:String
 
 })

@@ -91,8 +91,8 @@ ${chunk}
 const Quizz=async(req,res)=>{
     
     try{
-
-        const {topic,email}=req.body;
+        const email=req.user.email;
+        const {topic}=req.body;
         if(!topic||!email){
              return res.status(500).json({success:false,message:"Invalid request"});
         }

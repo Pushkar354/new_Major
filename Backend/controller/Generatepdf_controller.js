@@ -5,7 +5,8 @@ const generatePdf = require("./Syllabuspdf_Controller");
 
 const GeneratePdf_Controller = async (req,res)=>{
 
-const {email,topic,hours,modules} = req.body;
+  const {email}=req.user;
+const {topic,hours,modules} = req.body;
 
 if(!topic || !hours  || !Array.isArray(modules)){
    return res.status(400).send("invalid input");

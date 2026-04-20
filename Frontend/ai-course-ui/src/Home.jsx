@@ -12,8 +12,27 @@ export default function Home() {
   const [syllabus, setSyllabus] = useState(null);
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem("token");
+  const email = localStorage.getItem("email");
+  
   const navigate = useNavigate();
+ const handleCourse=async()=>{
+  const modules=syllabus.modules
+  const res=await fetch("http://localhost:3000/user/generatepdf",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      token:token
+    },
+    body:JSON.stringify({email,topic,hours,modules})
+  })
+  const data=await res.json();
+   if (!res.ok || data.success === false) {
+      alert(data.message || "Failed to generate Course");
+      
+      return;
+    }
 
+ }
   const handleGenerate = async () => {
   if (loading) return;
   try {
@@ -103,7 +122,7 @@ export default function Home() {
               className="mt-6 px-10 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl shadow-lg text-lg"
               onClick={handleGenerate}
             >
-              Generate Course
+              Generate Syllabus
             </motion.button>
             {loading && <p>Generating...</p>}
             {syllabus && (
@@ -159,9 +178,9 @@ export default function Home() {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       className="mt-6 px-10 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl shadow-lg text-lg"
-      onClick={handleYoutube}
+      onClick={handleCourse}
          >
-        Generate video
+        Generate Course
         </motion.button>
          </div>
         </div>

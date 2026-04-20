@@ -47,8 +47,4 @@ const generatePdf = async(email,topic,modules)=>{
     }
   });
 };
-<<<<<<< HEAD
 module.exports=generatePdf;
-=======
-module.exports=generatePdf;
->>>>>>> 4da85a71fdf6bdce444320f42f0b7d5281cdc557

@@ -84,7 +84,7 @@ try{
 
       arr.push({
         filename: e.title,
-        modules: await pdfBuffer
+        modules:  pdfBuffer
       });
     }
 

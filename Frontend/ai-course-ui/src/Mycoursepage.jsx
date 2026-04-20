@@ -7,7 +7,7 @@ export default function MyCourse() {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("User");
   const [courses, setCourses] = useState([]);
-
+  const [toggle,setToggle]=useState({});
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -52,7 +52,32 @@ export default function MyCourse() {
 
 
 
+ const openPdf=(pdf)=>{
+   const base64 = pdf.replace("data:application/pdf;base64,", "");
+     const byteCharacters = atob(base64);
+  const byteNumbers = new Array(byteCharacters.length);
+ for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+     const byteArray = new Uint8Array(byteNumbers);
+  const blob = new Blob([byteArray], { type: "application/pdf" });
 
+  const url = URL.createObjectURL(blob);
+  window.open(url);
+ } 
+ const showCourse=(id)=>{
+   const newState=!toggle[id]
+  
+   setToggle(prev=>({
+    ...prev,
+    [id]:newState
+   }))
+  const el=document.getElementById(id);
+  if(el){
+    el.style.display=newState ? "block":"none"
+  }
+  
+ }
   const handleCourseClick = (course) => {
     if (!course?._id) {
       console.log("ID missing:", course);
@@ -146,11 +171,25 @@ export default function MyCourse() {
                     </div>
 
                     <div>
-                      <p className="text-sm font-medium text-gray-700">
+                      <p className="text-sm font-medium text-gray-700 cursor-pointer " onClick={()=> showCourse(course._id)}>
                         {course.topic}
                       </p>
                       <p className="text-[11px] text-gray-500">
                         {new Date(course.createdAt).toDateString()}
+                      </p>
+                      <p>
+                        <div id={course._id} className="hidden">
+
+                        {course.data.map((item)=>(
+                          <p className="text-[12px] p-1 text-blue-500 font-semibold cursor-pointer" onClick={()=>openPdf(item.pdf)}>
+                            {item.filename}
+                            
+                          </p>
+                        ))}
+                        </div>
+                      </p>
+                      <p>
+
                       </p>
                     </div>
                   </div>
@@ -163,7 +202,7 @@ export default function MyCourse() {
                       Quiz
                     </button>
                     <button
-                      onClick={() => handleCourseClick(course)}
+                      onClick={() => showCourse(course._id)}
                       className="text-white bg-teal-600 px-3 py-1 rounded-full">
                       →
                     </button>

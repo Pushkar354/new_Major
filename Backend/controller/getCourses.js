@@ -2,7 +2,7 @@ const { Course_model } = require("../Database/Schema/user");
 
 const getCourses = async (req, res) => {
   try {
-    const email = req.body.email;
+    const email = req.user.email;
 
     console.log("EMAIL:", email);
 
@@ -15,7 +15,10 @@ const getCourses = async (req, res) => {
       courses: courses.map(course => ({
         _id: course._id,
         topic: course.topic,
-        modules: course.modules,
+        data: course.data.map(item=>({
+         filename: item.filename,
+        pdf:`data:application/pdf;base64,${item.modules.toString("base64")}`
+        })),
         createdAt: course.createdAt
       }))
     });
