@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Profile from "./profile";
-import Course from "./Course"
+import Course from "./YTCourse"
 
 export default function GeneratePdfPage() {
   const location = useLocation();
@@ -119,7 +119,7 @@ export default function GeneratePdfPage() {
           onClick={handleYoutube}
           className="mt-5 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-xl shadow"
         >
-          🎥 Suggested Videos
+          Suggested Videos
         </button>
       </div>
 

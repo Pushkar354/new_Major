@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 export default function LoadingPage() {
   return (
-    <div className="h-screen w-full flex flex-col items-center justify-center bg-black text-white">
+    <div absolute top-0   className="h-screen w-full flex flex-col items-center justify-center bg-black text-white z-100">
 
 
       <motion.h1

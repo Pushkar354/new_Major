@@ -29,7 +29,7 @@ return res.json({
 
 }catch(err){
  res.status(500).json({
-   msg:err.message,
+   message:err.message,
    success:false
  });
 }
