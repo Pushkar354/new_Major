@@ -6,6 +6,7 @@ import Mycourse from "./MyCourse";
 import MyCoursepage from "./Mycoursepage";
 import Course from "./Course";
 import GeneratePdfPage from "./coursePdf";
+import AdvancedQuiz from "./Quiz";
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
       <Route path="/Mycoursepage" element={<MyCoursepage/>}/>
       <Route path="/course" element={<Course/>}/>
       <Route path="/generatepdf" element={<GeneratePdfPage/>} />
+      <Route path="/Quiz" element={<AdvancedQuiz/>}/>
     </Routes>
   );
 }

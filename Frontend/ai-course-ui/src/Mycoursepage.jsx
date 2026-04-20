@@ -50,6 +50,32 @@ export default function MyCourse() {
     fetchCourses();
   }, []);
 
+  const QuizzHandler=async(course_id)=>{
+   try {
+     const token = localStorage.getItem("token");
+     const res = await fetch("http://localhost:3000/user/generateQuizz", {
+          method: "POST",
+          headers: {  "Content-Type": "application/json", token },
+          body:JSON.stringify({id:course_id})
+        });
+        const data=await res.json();
+         if (!res.ok || data.success === false) {
+      alert(data.message || "Failed to generate Quiz");
+     
+      return;
+    }
+   if (res.ok || data.success === true) {
+     alert(data.message || "Quiz generated");
+     console.log(data.quizz);
+      navigate("/Quiz", { state: { quiz: data.quizz.quiz } });
+      
+    }
+
+   } catch (err) {
+     alert(err.message);
+   }
+  }
+
 
 
  const openPdf=(pdf)=>{
@@ -154,17 +180,20 @@ export default function MyCourse() {
             </div>
 
 
+           
 
             {courses.length === 0 ? (
               <p className="text-gray-500 text-center mt-10">
                 No courses found
               </p>
             ) : (
-              courses.map((course, i) => (
-                <div
+             <div className="overflow-y-scroll h-[400px] ">
+
+             { courses.map((course, i) => (
+               <div
                   key={course._id || i}
-                  className="bg-white rounded-xl shadow-sm p-4 flex justify-between items-center"
-                >
+                  className="bg-white rounded-xl shadow-sm p-4 m-2 flex justify-between items-center"
+                  >
                   <div className="flex gap-3 items-center">
                     <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center">
                       📘
@@ -177,7 +206,7 @@ export default function MyCourse() {
                       <p className="text-[11px] text-gray-500">
                         {new Date(course.createdAt).toDateString()}
                       </p>
-                      <p>
+                      <div>
                         <div id={course._id} className="hidden">
 
                         {course.data.map((item)=>(
@@ -187,7 +216,7 @@ export default function MyCourse() {
                           </p>
                         ))}
                         </div>
-                      </p>
+                      </div>
                       <p>
 
                       </p>
@@ -198,7 +227,7 @@ export default function MyCourse() {
                     <div className="w-10 h-10 border-4 border-blue-500 rounded-full flex items-center justify-center text-xs">
                       60%
                     </div>
-                    <button className="text-white bg-teal-600 px-3 py-1 rounded-full">
+                    <button onClick={()=>QuizzHandler(course._id)} className="text-white bg-teal-600 px-3 py-1 rounded-full">
                       Quiz
                     </button>
                     <button
@@ -208,8 +237,10 @@ export default function MyCourse() {
                     </button>
                   </div>
                 </div>
-              ))
+              ))}
+              </div>
             )}
+            
 
           </div>
           <div className="col-span-12 lg:col-span-4 space-y-4">

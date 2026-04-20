@@ -92,13 +92,13 @@ const Quizz=async(req,res)=>{
     
     try{
         const email=req.user.email;
-        const {topic}=req.body;
-        if(!topic||!email){
+        const {id}=req.body;
+        if(!id||!email){
              return res.status(500).json({success:false,message:"Invalid request"});
         }
 
         
-        const course=await Course_model.findOne({topic:topic,email:email});
+        const course=await Course_model.findOne({_id:id,email:email});
         const modules=course.data;
         
         let i=1;
@@ -118,7 +118,7 @@ const Quizz=async(req,res)=>{
 
           const generated_quiz=new Quiz_model({
         email:email,
-        topic:topic,
+        course_id:id,
         quiz:quiz
     })
     await generated_quiz.save();

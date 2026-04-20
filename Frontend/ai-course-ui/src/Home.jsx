@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Profile from "./profile";
 import { useNavigate } from "react-router-dom";
 import AdvancedSlider from "./FeaturedVideo";
+import LoadingPage from "./Loading";
 
 
 export default function Home() {
@@ -11,11 +12,24 @@ export default function Home() {
   const [hours, setHours] = useState("");
   const [syllabus, setSyllabus] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [courseloading, setCourseloading] = useState(false);
   const token = localStorage.getItem("token");
   const email = localStorage.getItem("email");
   
   const navigate = useNavigate();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.body.style.overflow = courseloading ? "hidden" : "auto";
+  
+  return () => {
+      document.body.style.overflow = "auto"; 
+    };
+  }, [courseloading])
+  
+ 
+  
  const handleCourse=async()=>{
+  setCourseloading(true);
   const modules=syllabus.modules
   const res=await fetch("http://localhost:3000/user/generatepdf",{
     method:"POST",
@@ -28,8 +42,14 @@ export default function Home() {
   const data=await res.json();
    if (!res.ok || data.success === false) {
       alert(data.message || "Failed to generate Course");
-      
+      setCourseloading(false)
       return;
+    }
+   if (res.ok || data.success === true) {
+     alert(data.message || "Course generated");
+     setCourseloading(false);
+      navigate("/Mycoursepage");
+      
     }
 
  }
@@ -77,14 +97,15 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen">
+    
+    <div className="h-screen absolute z-10">
       <div className="max-w-10xl mx-auto bg-white/80 backdrop-blur-xl shadow-2xl overflow-hidden">
         <div className="relative p-2 bg-gradient-to-r from-blue-100 via-white to-blue-100">
           <div className="flex justify-between items-center">
             <div className="flex items-center mt-0">
               <img src="./logo1.png" className="h-30 w-60 mt-0 whover:scale-105 transition"></img>
             </div>
-
+           {courseloading  && <LoadingPage/>}
             <div className="flex items-center gap-6 text-gray-700">
               <span className="border-b-2 border-black pb-1">All Courses</span>
               <motion.button

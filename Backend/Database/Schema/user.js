@@ -45,7 +45,7 @@ const Module_quiz=new moongose.Schema({
 })
 const Quiz_Schema=new moongose.Schema({
     email:String,
-    topic:String,
+    course_id:String,
     quiz:[Module_quiz],
     createdAt:{type:Date,default:Date.now}
 });
