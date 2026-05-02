@@ -84,7 +84,7 @@ export function Login() {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
-    const res = await fetch("http://localhost:3000/user/login", {
+    const res = await fetch("https://ai-course-generator-rwmj.onrender.com/user/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

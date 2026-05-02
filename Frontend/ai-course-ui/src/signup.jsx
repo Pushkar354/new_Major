@@ -9,7 +9,7 @@ export function Signup() {
   const [password, setPassword] = useState("");
 
   const handleSignup = async () => {
-    const res = await fetch("http://localhost:3000/user/register", {
+    const res = await fetch("https://ai-course-generator-rwmj.onrender.com/user/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
