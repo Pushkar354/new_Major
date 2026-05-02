@@ -333,7 +333,7 @@ export default function MyCourse() {
       try {
         const token = localStorage.getItem("token");
 
-        const res = await fetch("http://localhost:3000/user/mycourses", {
+        const res = await fetch("https://ai-course-generator-rwmj.onrender.com/user/mycourses", {
           method: "GET",
           headers: { token },
         });
@@ -404,7 +404,7 @@ export default function MyCourse() {
  const QuizzHandler= async(course_id)=>{
   try {
     setQuizloading(true);
-    const res=await fetch("http://localhost:3000/user/generateQuizz",{
+    const res=await fetch("https://ai-course-generator-rwmj.onrender.com/user/generateQuizz",{
       method:"POST",
       headers:{
                 "Content-Type": "application/json",
@@ -433,7 +433,7 @@ export default function MyCourse() {
   const handleVideos = async (course) => {
   try {
     setYoutubeloading(true);
-    const res = await fetch("http://localhost:3000/user/suggestYoutube", {
+    const res = await fetch("https://ai-course-generator-rwmj.onrender.com/user/suggestYoutube", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

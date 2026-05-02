@@ -310,7 +310,7 @@ export default function Home() {
   const handleCourse = async () => {
     setCourseloading(true);
     const modules = syllabus.modules;
-    const res = await fetch("http://localhost:3000/user/generatepdf", {
+    const res = await fetch("https://ai-course-generator-rwmj.onrender.com/user/generatepdf", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -337,7 +337,7 @@ export default function Home() {
     if (loading) return;
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:3000/user/syllabus", {
+      const res = await fetch("https://ai-course-generator-rwmj.onrender.com/user/syllabus", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

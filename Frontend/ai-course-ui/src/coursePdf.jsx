@@ -16,7 +16,7 @@ export default function GeneratePdfPage() {
   const handleAction = async (mod, type, index) => {
     try {
       setLoadingIndex(index);
-      const res = await fetch("http://localhost:3000/user/generatepdf", {
+      const res = await fetch("https://ai-course-generator-rwmj.onrender.com/user/generatepdf", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -49,7 +49,7 @@ export default function GeneratePdfPage() {
 
   const handleYoutube = async () => {
     try {
-      const res = await fetch("http://localhost:3000/user/suggestYoutube", {
+      const res = await fetch("https://ai-course-generator-rwmj.onrender.com/user/suggestYoutube", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
