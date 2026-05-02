@@ -11,7 +11,7 @@ Modules:
 ${JSON.stringify(modules)}
 
 Rules:
-- explain every lesson
+- explain every lesson in 400 words
 - include explanation
 - example
 - real world usage
