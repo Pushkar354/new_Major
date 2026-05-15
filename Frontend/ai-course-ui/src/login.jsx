@@ -74,14 +74,16 @@
 
 
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { AppContext } from "../context/AppContext";
 
 export function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const {loggedIn,setLoggedIn}=useContext(AppContext);
 
   const handleLogin = async () => {
     const res = await fetch("https://ai-course-generator-rwmj.onrender.com/user/login", {
@@ -96,6 +98,7 @@ export function Login() {
 
     if (res.ok) {
       alert("Login successfull");
+      setLoggedIn(true);
       localStorage.setItem("email", email);
       localStorage.setItem("token", data.token);
       return true;

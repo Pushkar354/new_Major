@@ -262,12 +262,13 @@
 
 
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { motion } from "framer-motion";
 import Profile from "./profile";
 import { useNavigate } from "react-router-dom";
 import AdvancedSlider from "./FeaturedVideo";
 import LoadingPage from "./Loading";
+import { AppContext } from "../context/AppContext";
 
 export default function Home() {
   const [topic, setTopic] = useState("");
@@ -278,8 +279,8 @@ export default function Home() {
   const token = localStorage.getItem("token");
   const email = localStorage.getItem("email");
   const navigate = useNavigate();
-
- 
+  const {loggedIn,setLoggedIn}=useContext(AppContext);
+   
   const placeholders = [
     "Learn AI from scratch...",
     "Master React in 10 hours...",
@@ -308,6 +309,9 @@ export default function Home() {
  }, [courseloading])
  
   const handleCourse = async () => {
+    if(!loggedIn){
+      navigate("/login");
+    }
     setCourseloading(true);
     const modules = syllabus.modules;
     const res = await fetch("https://ai-course-generator-rwmj.onrender.com/user/generatepdf", {

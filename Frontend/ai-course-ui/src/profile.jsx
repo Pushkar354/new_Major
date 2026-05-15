@@ -3,16 +3,18 @@
 
 
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Popup from "reactjs-popup";
 import "reactjs-popup/dist/index.css";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { AppContext } from "../context/AppContext";
 
 function Profile() {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("User");
+  const {loggedIn,setLoggedIn}=useContext(AppContext);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -30,6 +32,7 @@ function Profile() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
+    setLoggedIn(false);
     navigate("/");
   };
 
