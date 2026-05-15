@@ -338,6 +338,7 @@ export default function Home() {
   const handleGenerate = async () => {
      if(!loggedIn){
       navigate("/login");
+      return;
     }
     if (loading) return;
 
