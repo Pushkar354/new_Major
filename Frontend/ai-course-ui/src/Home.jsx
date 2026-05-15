@@ -309,9 +309,7 @@ export default function Home() {
  }, [courseloading])
  
   const handleCourse = async () => {
-    if(!loggedIn){
-      navigate("/login");
-    }
+   
     setCourseloading(true);
     const modules = syllabus.modules;
     const res = await fetch("https://ai-course-generator-rwmj.onrender.com/user/generatepdf", {
@@ -338,7 +336,11 @@ export default function Home() {
   };
 
   const handleGenerate = async () => {
+     if(!loggedIn){
+      navigate("/login");
+    }
     if (loading) return;
+
     try {
       setLoading(true);
       const res = await fetch("https://ai-course-generator-rwmj.onrender.com/user/syllabus", {
